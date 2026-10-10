@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# 密钥与环境
+.env
+.env.local
+
+# 运行产物
+logs/
+dashboard/index.html
+
+# 其它
+.DS_Store
+*.log
