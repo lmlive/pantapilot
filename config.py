@@ -12,6 +12,22 @@ from dotenv import load_dotenv
 # 项目根目录
 BASE_DIR = Path(__file__).resolve().parent
 
+# 清洗环境变量中会导致 httpx 解析失败的 no_proxy 条目（见需求文档 §5.1）
+def clean_no_proxy() -> None:
+    """清洗环境变量中会导致 httpx 解析失败的 no_proxy 条目。"""
+    for key in ("no_proxy", "NO_PROXY"):
+        val = os.environ.get(key, "")
+        if not val:
+            continue
+        cleaned = ",".join(
+            item for item in val.split(",") if item.strip() and "[" not in item and "]" not in item
+        )
+        if cleaned != val:
+            os.environ[key] = cleaned
+
+_clean_no_proxy = clean_no_proxy  # 兼容别名
+_clean_no_proxy()
+
 # 加载 .env（密钥）
 load_dotenv(BASE_DIR / ".env")
 
@@ -78,8 +94,11 @@ LLM_MODEL: str = os.getenv("LLM_MODEL", "cohere/north-mini-code:free")
 LLM_TIMEOUT_SECONDS: float = _env_float("LLM_TIMEOUT_SECONDS", 60.0)
 LLM_MAX_RETRIES: int = _env_int("LLM_MAX_RETRIES", 1)
 
-# 触发下单的最小置信度
-MIN_CONFIDENCE: float = _env_float("MIN_CONFIDENCE", 0.6)
+# 触发下单的最小置信度（降到 0.5 促成高质量 BUY 决策，避免全 HOLD）
+MIN_CONFIDENCE: float = _env_float("MIN_CONFIDENCE", 0.5)
+
+# Demo 演示限制：只跑 3-5 个精选市场（默认最多 5 个，0 表示不限制）
+DEMO_MARKET_LIMIT: int = _env_int("DEMO_MARKET_LIMIT", 5)
 
 # 多角色 Agent 团队（Scout→Estimator→Decision→Risk）开关；false 时退回单 agent 静态分析
 AGENTS_ENABLED: bool = _env_bool("AGENTS_ENABLED", True)

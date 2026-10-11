@@ -24,6 +24,28 @@ logging.basicConfig(
 log = logging.getLogger("pantapilot.main")
 
 
+def select_demo_markets(markets: list[dict], limit: int = 5) -> list[dict]:
+    """挑出最有演示看点的市场（有交易量、有情报源）。控制在 3-5 个以内，适合 90 秒视频演示。"""
+    if limit <= 0 or len(markets) <= limit:
+        return markets
+
+    def score(m: dict) -> tuple[int, float]:
+        vol = 0.0
+        try:
+            vol = float(m.get("volumeUsdc") or 0.0)
+        except (ValueError, TypeError):
+            vol = 0.0
+        has_oracle = 1 if bool(m.get("oracle")) else 0
+        has_desc = 1 if len(str(m.get("description") or "")) > 30 else 0
+        has_vol = 1 if vol > 0 else 0
+        # 优先级：(有交易量且有情报) > (有交易量) > (有情报) > (其它)
+        priority = (has_vol * 2) + has_oracle + has_desc
+        return (priority, vol)
+
+    sorted_markets = sorted(markets, key=score, reverse=True)
+    return sorted_markets[:limit]
+
+
 def run_once(
     client: PantaClient,
     llm: LLMDecisionEngine,
@@ -35,12 +57,16 @@ def run_once(
     """执行一轮扫描。返回统计。"""
     stats = {"markets": 0, "analyzed": 0, "buy_signals": 0, "holds": 0, "trades": 0}
 
-    markets = client.primary_markets()
-    stats["markets"] = len(markets)
-    logger.start(mode="LIVE" if not config.DRY_RUN else "PAPER", market_count=len(markets))
-    log.info("本轮扫描到 %d 个 primary 市场", len(markets))
+    all_markets = client.primary_markets()
+    stats["markets"] = len(all_markets)
+    logger.start(mode="LIVE" if not config.DRY_RUN else "PAPER", market_count=len(all_markets))
+    log.info("本轮扫描到 %d 个 primary 市场", len(all_markets))
 
-    for m in markets:
+    # Demo 模式挑选 3-5 个高质量市场进行深入决策，避免过多市场拖慢 90 秒视频节奏
+    target_markets = select_demo_markets(all_markets, limit=config.DEMO_MARKET_LIMIT)
+    log.info("精选 %d 个市场进行 AI 团队决策流 (DEMO_MARKET_LIMIT=%d)", len(target_markets), config.DEMO_MARKET_LIMIT)
+
+    for m in target_markets:
         market_id = str(m.get("marketId") or m.get("id") or "")
         if not market_id or market_id in seen:
             continue
@@ -67,9 +93,9 @@ def run_once(
             log.warning("处理市场 %s 失败: %s", market_id, exc)
             logger.error(market_id, f"analysis error: {exc}")
 
-    # 刷新看板
+    # 刷新看板（传入所有市场以展示市场网格）
     try:
-        render_dashboard(logger, stats)
+        render_dashboard(logger, stats, markets=all_markets)
     except Exception as exc:  # noqa: BLE001
         log.warning("看板渲染失败: %s", exc)
 

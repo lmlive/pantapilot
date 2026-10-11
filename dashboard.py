@@ -57,65 +57,119 @@ def _is_risk_veto(d: dict[str, Any]) -> bool:
     return False
 
 
-def _evidence_block(rec: dict[str, Any]) -> str:
-    """决策行下方的多角色证据链（无 evidence 的旧日志返回空串）。"""
+def _pipeline_flow(rec: dict[str, Any]) -> str:
+    """四角色协作流水线横向视图：Scout ➔ Estimator ➔ Decision ➔ Risk。"""
     d = rec.get("decision", {}) or {}
     ev = d.get("evidence")
     if not isinstance(ev, dict):
         return ""
 
-    parts: list[str] = []
+    pipe = ev.get("pipeline", "")
+    if pipe == "fallback_single_agent":
+        return '<div class="pipe-fallback">Single Agent Fallback (Static Analysis)</div>'
 
-    pipe = ev.get("pipeline")
-    if pipe:
-        parts.append(f'<span class="ev-pipe">{_esc(pipe)}</span>')
+    # ① Scout
+    intel = ev.get("intel") or {}
+    q_count = len(intel.get("queries") or [])
+    has_oracle = bool(intel.get("oracle_head"))
+    has_search = bool(intel.get("search_head"))
+    scout_sources = []
+    if has_oracle:
+        scout_sources.append("Oracle")
+    if has_search:
+        scout_sources.append("Web")
+    scout_source_str = " + ".join(scout_sources) if scout_sources else "Market Meta"
+    scout_stat = f"{max(1, q_count + (1 if has_oracle else 0))} Sources"
+    scout_desc = f"Intel: {scout_source_str}"
 
-    est = ev.get("estimator")
-    if isinstance(est, dict) and est:
+    # ② Estimator
+    est = ev.get("estimator") or {}
+    est_prob = est.get("true_prob_yes")
+    if est_prob is not None:
         try:
-            tp = float(est.get("true_prob_yes"))
-            seg = f"est. YES {tp:.2f}"
-            # 记录上下文里通常没有市场价；拿得到才显示 vs market
-            mkt = rec.get("yesPrice", d.get("yesPrice"))
-            if mkt not in (None, ""):
-                try:
-                    seg += f" vs market {float(mkt):.3f}"
-                except (TypeError, ValueError):
-                    pass
-            extra = []
-            if est.get("confidence") not in (None, ""):
-                try:
-                    extra.append(f"conf {float(est.get('confidence')):.2f}")
-                except (TypeError, ValueError):
-                    pass
-            if est.get("uncertainty"):
-                extra.append(f"unc {_esc(est.get('uncertainty'))}")
-            if extra:
-                seg += " · " + " · ".join(extra)
-            parts.append(f'<div class="ev-line ev-est">{seg}</div>')
-        except (TypeError, ValueError):
-            pass
-        ke = est.get("key_evidence")
-        if ke:
-            parts.append(f'<div class="ev-line ev-ke">key_evidence: {_esc(str(ke)[:300])}</div>')
+            val_f = float(est_prob)
+            est_stat = f"YES {val_f:.2f} ({val_f*100:.0f}%)"
+        except (ValueError, TypeError):
+            est_stat = "YES --"
+    else:
+        est_stat = "YES --"
+    est_conf = est.get("confidence")
+    est_unc = est.get("uncertainty", "med")
+    est_desc = f"conf {est_conf or 0:.2f} · unc {_esc(est_unc)}"
 
-    intel = ev.get("intel")
-    if isinstance(intel, dict) and intel:
-        head = intel.get("oracle_head") or intel.get("search_head") or ""
-        head = str(head).strip()
-        if head:
-            parts.append(f'<div class="ev-line ev-intel">intel: {_esc(head[:200])}…</div>')
-        queries = intel.get("queries")
-        if isinstance(queries, list) and queries:
-            q = " · ".join(str(q) for q in queries[:4])
-            parts.append(f'<div class="ev-line ev-q">queries: {_esc(q[:200])}</div>')
+    # ③ Decision & Benchmark 对比
+    dec_val = d.get("decision", "HOLD")
+    bm = ev.get("benchmark") or {}
+    gap_str = bm.get("gap_pct")
+    if not gap_str and est_prob is not None:
+        mkt = rec.get("yesPrice", d.get("yesPrice"))
+        if mkt not in (None, ""):
+            try:
+                g = float(est_prob) - float(mkt)
+                gap_str = f"{g*100:+.1f}%"
+            except (ValueError, TypeError):
+                pass
+    if gap_str:
+        dec_stat = f"Edge {gap_str}"
+        dec_desc = f"{dec_val} · {_esc(d.get('suggested_usdc', 0))} USDC"
+    else:
+        dec_stat = dec_val
+        dec_desc = f"{_esc(d.get('suggested_usdc', 0))} USDC proposed"
 
-    if not parts:
-        return ""
-    return (
-        '<details class="ev"><summary class="ev-sum">Evidence chain ▾</summary>'
-        f'<div class="ev-body">{"".join(parts)}</div></details>'
-    )
+    # ④ Risk
+    risk = ev.get("risk") or {}
+    is_veto = _is_risk_veto(d)
+    if is_veto:
+        risk_stat = "VETOED"
+        risk_cls = "p-veto"
+        risk_desc = _esc(risk.get("note") or "Risk guardrail triggered")
+    else:
+        risk_stat = "PASSED"
+        risk_cls = "p-pass"
+        risk_desc = _esc(risk.get("note") or "Within cap & verified")
+
+    # 展开细节
+    detail_parts: list[str] = []
+    ke = est.get("key_evidence")
+    if ke:
+        detail_parts.append(f'<div class="ev-line ev-ke"><b>key_evidence:</b> {_esc(str(ke)[:300])}</div>')
+    head = intel.get("oracle_head") or intel.get("search_head") or ""
+    if head:
+        detail_parts.append(f'<div class="ev-line ev-intel"><b>Intel Feed:</b> {_esc(str(head)[:200])}…</div>')
+    pipe_badge = f'<div class="pipe-header"><span class="ev-pipe">{_esc(pipe)}</span></div>' if pipe else ""
+    details_html = ""
+    if detail_parts:
+        details_html = f"""<details class="pipe-details ev">
+          <summary class="pipe-details-sum">Details & Evidence ▾</summary>
+          <div class="pipe-details-body">{''.join(detail_parts)}</div>
+        </details>"""
+
+    return f"""{pipe_badge}<div class="pipeline-board">
+      <div class="pipe-step">
+        <div class="pipe-role"><span class="pipe-badge b-scout">1. SCOUT</span></div>
+        <div class="pipe-stat">{scout_stat}</div>
+        <div class="pipe-desc">{scout_desc}</div>
+      </div>
+      <div class="pipe-arrow">➜</div>
+      <div class="pipe-step">
+        <div class="pipe-role"><span class="pipe-badge b-est">2. ESTIMATOR</span></div>
+        <div class="pipe-stat">{est_stat}</div>
+        <div class="pipe-desc">{est_desc}</div>
+      </div>
+      <div class="pipe-arrow">➜</div>
+      <div class="pipe-step">
+        <div class="pipe-role"><span class="pipe-badge b-dec">3. DECISION</span></div>
+        <div class="pipe-stat { 'p-edge-pos' if '+' in str(gap_str) else '' }">{dec_stat}</div>
+        <div class="pipe-desc">{dec_desc}</div>
+      </div>
+      <div class="pipe-arrow">➜</div>
+      <div class="pipe-step {risk_cls}">
+        <div class="pipe-role"><span class="pipe-badge b-risk">4. RISK</span></div>
+        <div class="pipe-stat">{risk_stat}</div>
+        <div class="pipe-desc">{risk_desc}</div>
+      </div>
+    </div>
+    {details_html}"""
 
 
 def _status_badge(status: str) -> str:
@@ -134,12 +188,12 @@ def _decision_row(rec: dict[str, Any]) -> str:
     title = _esc(rec.get("title", rec.get("marketId", "")))
     conf_color = "#2ecc71" if conf >= config.MIN_CONFIDENCE else "#e67e22"
     veto = '<span class="ev-veto">[RISK VETO]</span>' if _is_risk_veto(d) else ""
-    evidence = _evidence_block(rec)
+    pipeline_view = _pipeline_flow(rec)
     return f"""<div class="drow {cls}">
       <div class="dhead"><span class="dtag">{dec}</span>{veto}<span class="dtitle">{title}</span><span class="dtime">{ts}</span></div>
       <div class="dconf"><span style="width:{confp:.0f}%"></span></div>
       <div class="dreason">{reason} <small style="color:{conf_color}">conf {conf:.2f}</small></div>
-      {evidence}
+      {pipeline_view}
     </div>"""
 
 
@@ -233,16 +287,31 @@ def render_dashboard(
   .pbar-yes {{ background: #2ecc71; color: #062; display: flex; align-items: center; padding-left: 6px; }}
   .pbar-no {{ background: #e74c3c; color: #fff; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; }}
   .mvol {{ color: #889; font-size: 12px; }}
-  /* 证据链（多角色 Agent） */
-  .ev {{ margin-top: 8px; border-top: 1px dashed #242a44; padding-top: 6px; }}
-  .ev-sum {{ cursor: pointer; color: #667; font-size: 11px; user-select: none; }}
-  .ev-sum:hover {{ color: #7ad; }}
-  .ev-body {{ margin-top: 6px; padding: 8px 10px; background: #12152440; border: 1px solid #242a44; border-radius: 6px; }}
+  /* 四角色协作流水线样式 (P1 横向流水线) */
+  .pipeline-board {{ display: flex; align-items: stretch; gap: 8px; margin: 12px 0 6px; background: #111424; border: 1px solid #232a48; border-radius: 8px; padding: 10px 12px; overflow-x: auto; }}
+  .pipe-step {{ flex: 1; min-width: 140px; background: #181d33; border: 1px solid #283050; border-radius: 6px; padding: 8px 10px; display: flex; flex-direction: column; justify-content: center; }}
+  .pipe-arrow {{ display: flex; align-items: center; justify-content: center; color: #475577; font-size: 13px; font-weight: 700; user-select: none; }}
+  .pipe-role {{ margin-bottom: 4px; }}
+  .pipe-badge {{ font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 3px; letter-spacing: 0.5px; text-transform: uppercase; }}
+  .b-scout {{ background: #1e3a5f; color: #60a5fa; }}
+  .b-est {{ background: #3b2d54; color: #c084fc; }}
+  .b-dec {{ background: #134e48; color: #2dd4bf; }}
+  .b-risk {{ background: #4a3418; color: #fbbf24; }}
+  .pipe-stat {{ font-size: 13px; font-weight: 700; color: #f1f5f9; margin-bottom: 2px; }}
+  .p-edge-pos {{ color: #34d399; }}
+  .pipe-desc {{ font-size: 11px; color: #94a3b8; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+  .pipe-step.p-pass {{ border-color: #10b98144; }}
+  .pipe-step.p-pass .pipe-stat {{ color: #34d399; }}
+  .pipe-step.p-veto {{ border-color: #ef444466; background: #2a151b; }}
+  .pipe-step.p-veto .pipe-stat {{ color: #f87171; }}
+  .pipe-details {{ margin-top: 6px; font-size: 11px; }}
+  .pipe-details-sum {{ cursor: pointer; color: #64748b; user-select: none; padding: 2px 0; }}
+  .pipe-details-sum:hover {{ color: #94a3b8; }}
+  .pipe-details-body {{ margin-top: 6px; padding: 8px 12px; background: #0c0e1a; border: 1px solid #1e243d; border-radius: 6px; }}
+  .pipe-fallback {{ margin-top: 8px; font-size: 11px; color: #64748b; font-style: italic; }}
   .ev-line {{ color: #889; font-size: 12px; line-height: 1.55; margin: 3px 0; word-break: break-word; }}
-  .ev-est {{ color: #7ad; font-weight: 600; }}
-  .ev-ke {{ color: #aab; }}
-  .ev-intel, .ev-q {{ color: #667; }}
-  .ev-pipe {{ display: inline-block; background: #1c2136; color: #889; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 4px; margin-bottom: 4px; }}
+  .ev-ke {{ color: #cbd5e1; }}
+  .ev-intel {{ color: #94a3b8; }}
   .ev-veto {{ background: #e74c3c; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px; letter-spacing: .5px; }}
   .dlegend {{ color: #667; font-size: 12px; margin-bottom: 8px; }}
   .dlegend .lg-yes {{ color: #2ecc71; font-weight: 700; }}

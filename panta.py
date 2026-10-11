@@ -25,17 +25,7 @@ _SECONDARY_ALIASES = {"secondary", "Secondary", "SECONDARY", "secondary_active",
 _RESOLVED_ALIASES = {"resolved", "Resolved", "RESOLVED", "closed", "Closed", "settled", "Settled"}
 
 
-def _clean_no_proxy() -> None:
-    """清洗环境变量中会导致 httpx 解析失败的 no_proxy 条目。"""
-    for key in ("no_proxy", "NO_PROXY"):
-        val = os.environ.get(key, "")
-        if not val:
-            continue
-        cleaned = ",".join(
-            item for item in val.split(",") if item.strip() and "[" not in item and "]" not in item
-        )
-        if cleaned != val:
-            os.environ[key] = cleaned
+_clean_no_proxy = config._clean_no_proxy
 
 
 def normalize_status(raw: Any) -> str:

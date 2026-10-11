@@ -141,7 +141,7 @@ def _broadcast(tx: Any, rpc_url: str) -> Any:
 
     from solders.signature import Signature
 
-    from panta import _clean_no_proxy
+    from config import _clean_no_proxy
 
     _clean_no_proxy()
     raw = base64.b64encode(bytes(tx)).decode()

@@ -17,20 +17,11 @@ from typing import Any
 
 import httpx
 
+import config
+
 log = logging.getLogger("pantapilot.scout")
 
-# 清洗沙箱 no_proxy 里含 [ 的条目（见需求文档 §5.1）
-def _clean_no_proxy() -> None:
-    import os
-    for key in ("no_proxy", "NO_PROXY"):
-        val = os.environ.get(key, "")
-        if not val:
-            continue
-        cleaned = ",".join(
-            item for item in val.split(",") if item.strip() and "[" not in item and "]" not in item
-        )
-        if cleaned != val:
-            os.environ[key] = cleaned
+_clean_no_proxy = config._clean_no_proxy
 
 
 _UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
