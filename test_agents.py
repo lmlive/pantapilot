@@ -214,5 +214,76 @@ class TestLLMHelpers(unittest.TestCase):
         self.assertEqual(out["decision"], "HOLD")
 
 
+class TestPrimaryMarketEnrichment(unittest.TestCase):
+    """primary_markets() 必须补齐 list 端点缺失的字段。
+
+    实测 2026-10-12：list 端点对 campaign 创建的市场不返回 title（空串），
+    而该市场价格齐全，于是旧的“仅缺价格才拉 detail”条件不触发，标题一路空着
+    —— 既会渲染出无标题的看板卡片，也会把 "Market: " 空标题喂给 LLM。
+    """
+
+    def setUp(self):
+        from panta import PantaClient
+
+        self.client = PantaClient()
+
+    def _market(self, **over):
+        base = {
+            "marketId": "TESTID",
+            "status": "primary",
+            "resolved": False,
+            "yesPrice": 0.51,
+            "noPrice": 0.49,
+            "title": "A real title",
+        }
+        base.update(over)
+        return base
+
+    def test_missing_title_triggers_detail_fetch(self):
+        listed = self._market(title="")
+        self.client.list_markets = lambda: [listed]
+        calls = []
+
+        def fake_detail(mid):
+            calls.append(mid)
+            return {"title": "Recovered from detail"}
+
+        self.client.market_detail = fake_detail
+        out = self.client.primary_markets()
+
+        self.assertEqual(calls, ["TESTID"], "detail should be fetched when title is blank")
+        self.assertEqual(out[0]["title"], "Recovered from detail")
+
+    def test_complete_market_needs_no_detail_fetch(self):
+        self.client.list_markets = lambda: [self._market()]
+        calls = []
+        self.client.market_detail = lambda mid: calls.append(mid) or {}
+        out = self.client.primary_markets()
+
+        self.assertEqual(calls, [], "no fetch when price and title are both present")
+        self.assertEqual(out[0]["title"], "A real title")
+
+    def test_missing_price_still_triggers_detail_fetch(self):
+        listed = self._market(yesPrice=None)
+        self.client.list_markets = lambda: [listed]
+        self.client.market_detail = lambda mid: {"yesPrice": 0.42}
+        out = self.client.primary_markets()
+
+        self.assertEqual(out[0]["yesPrice"], 0.42)
+
+    def test_whitespace_title_counts_as_missing(self):
+        listed = self._market(title="   ")
+        self.client.list_markets = lambda: [listed]
+        self.client.market_detail = lambda mid: {"title": "Fixed"}
+        out = self.client.primary_markets()
+
+        self.assertEqual(out[0]["title"], "Fixed")
+
+    def test_resolved_primary_is_excluded(self):
+        self.client.list_markets = lambda: [self._market(resolved=True)]
+        self.client.market_detail = lambda mid: {}
+        self.assertEqual(self.client.primary_markets(), [])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

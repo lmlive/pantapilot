@@ -147,10 +147,13 @@ class PantaClient:
     # 便捷方法
     # ------------------------------------------------------------------
     def primary_markets(self) -> list[dict[str, Any]]:
-        """返回可下单的 primary 且未结算的市场，并用 detail 补充价格字段。
+        """返回可下单的 primary 且未结算的市场，并用 detail 补充缺失字段。
 
-        list 端点价格字段不稳定（可能为 None）；detail 端点通常有完整价格。
-        列表缺价格时用 detail 兜底，保证 LLM/看板拿到真实价格。
+        两个端点各有缺口，必须都兜底：
+          - list 端点的价格字段不稳定（可能为 None）；
+          - list 端点对 campaign 创建的市场不返回 title（实测 2026-10-12 新增的
+            NectarFi 成交量市场 title 为空串，detail 里才有）。
+        任一关键字段缺失就拉 detail 覆盖，保证 LLM/看板拿到完整数据。
         """
         candidates = []
         for m in self.list_markets():
@@ -162,7 +165,9 @@ class PantaClient:
         enriched = []
         for m in candidates:
             mid = str(m.get("marketId") or m.get("id") or "")
-            if mid and (m.get("yesPrice") in (None, "") or m.get("noPrice") in (None, "")):
+            missing_price = m.get("yesPrice") in (None, "") or m.get("noPrice") in (None, "")
+            missing_title = not str(m.get("title") or "").strip()
+            if mid and (missing_price or missing_title):
                 try:
                     detail = self.market_detail(mid)
                     merged = dict(m)
