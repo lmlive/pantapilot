@@ -1,4 +1,9 @@
-httpx>=0.27
+# httpx[socks] pulls in socksio. Without it, httpx raises
+#   "Using SOCKS proxy, but the 'socksio' package is not installed"
+# at import time whenever http_proxy/https_proxy is set to a socks5:// URL.
+# Plain httpx>=0.27 is not enough: the dependency is only needed at runtime,
+# so the failure surfaces as an ImportError in the app rather than at install.
+httpx[socks]>=0.27
 solders>=0.29
 base58>=2.1
 openai>=1.0

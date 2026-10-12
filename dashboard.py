@@ -227,10 +227,15 @@ def render_dashboard(
     holds = [r for r in analyses if (r.get("decision") or {}).get("decision") == "HOLD"]
     trades = [r for r in records if r.get("event") in ("trade_done", "trade_dry_run", "trade_start")]
 
-    tracked = stats.get("markets", len(markets or []))
-    ai_decisions = stats.get("analyzed", len(analyses))
-    buy_count = stats.get("buy_signals", len(buy_signals))
-    hold_count = stats.get("holds", len(holds))
+    # The headline counters must agree with the decision flow rendered below them. The flow
+    # is every analysis in the log, so counting only the current run's `stats` made the cards
+    # read 0 while five rows were visible underneath (seen when a run is interrupted mid-cycle).
+    # Derive the counts from the same records the flow uses; `stats` only supplies the tracked
+    # market count, which the log cannot know after a restart.
+    tracked = stats.get("markets") or len(markets or [])
+    ai_decisions = len(analyses)
+    buy_count = len(buy_signals)
+    hold_count = len(holds)
 
     mode = "LIVE" if not config.DRY_RUN else "PAPER"
     mode_cls = "mode-live" if not config.DRY_RUN else "mode-paper"
