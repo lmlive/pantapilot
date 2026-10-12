@@ -1,7 +1,7 @@
 {
-  "settled_markets_seen": 11,
+  "settled_markets_seen": 8,
   "actionable_trades": 0,
-  "skipped_no_edge_or_illiquid": 11,
+  "skipped_no_edge_or_illiquid": 8,
   "wins": 0,
   "losses": 0,
   "win_rate_pct": 0.0,
@@ -42,16 +42,6 @@
       "pass_reason": "no_material_edge"
     },
     {
-      "marketId": "5cyMGUVDcToJ8ws5V1sKkGnzthLrLTsqEjo3Pa2HNU8v",
-      "title": "France will concede in the first 25 minutes against Belgium on the 05 October.",
-      "category": "sports",
-      "entry_yes": 0.506406474,
-      "outcome": "NO",
-      "volume_usdc": 39.0,
-      "oracle": "https://www.fifa.com,https://www.uefa.com",
-      "pass_reason": "no_material_edge"
-    },
-    {
       "marketId": "4J6WxFGuCw9deMJ6pQ7gwpVXCvLorMrz28icSnCYWeGB",
       "title": "Manchester United will win against Spurs with 2 or more goals",
       "category": "sports",
@@ -82,16 +72,6 @@
       "pass_reason": "no_material_edge"
     },
     {
-      "marketId": "4PXNDkRxNEbVrp6gRx9gs3zqkA8XgmHNfVEJ1jCwNpEt",
-      "title": "WILL $LAPTOP cross 20 billion dollars from now until the next 1 hour ?",
-      "category": "crypto",
-      "entry_yes": 0.497727686,
-      "outcome": "YES",
-      "volume_usdc": 20.6,
-      "oracle": "https://www.coingecko.com",
-      "pass_reason": "no_material_edge"
-    },
-    {
       "marketId": "GeBYoNa966zcF1oJ2w8h2WkCLsjwyzsg7iy88kzju2hK",
       "title": "Will ETH be above $5,000 within the next 1hr ?",
       "category": "crypto",
@@ -100,16 +80,6 @@
       "volume_usdc": 10.0,
       "oracle": "https://www.coingecko.com",
       "pass_reason": "no_material_edge"
-    },
-    {
-      "marketId": "GKebvYjZPe7QPrHPnNSsBL4t62JYBzhRdb2qB1dACS8e",
-      "title": "Will BTC drop to $5,000 in the next 1 hour?",
-      "category": "crypto",
-      "entry_yes": 0.5,
-      "outcome": "NO",
-      "volume_usdc": 5.0,
-      "oracle": "https://www.coingecko.com",
-      "pass_reason": "illiquid"
     },
     {
       "marketId": "3oAkiYpE2H7gJRok3w3YcGWfhrsM4kXAXnKYH7iLokaC",
