@@ -1,0 +1,1 @@
+4 agents - live Panta markets - paper mode (DRY_RUN)

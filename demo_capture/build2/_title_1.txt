@@ -1,0 +1,1 @@
+An autonomous prediction-market desk that is graded on restraint
