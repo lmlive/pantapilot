@@ -44,33 +44,42 @@ Hide bookmarks and the tab strip if your recorder allows; no other tabs, no emai
 - **Right 40%:** dashboard tab.
 - **Full screen / hide the desktop.** Nothing on screen should suggest a laptop in a bedroom.
 
-### 0.4 Facts you may state on camera (verified 2026-10-12 afternoon)
+### 0.4 Facts you may state on camera (verified 2026-10-12 20:13 — RE-CHECK BEFORE RECORDING)
 
-| Fact | Verified value |
+**The venue changes hourly. Every number below was different two hours ago.** Run
+`python -c "from panta import PantaClient; [print(m['title'], m['yesPrice'], m['volumeUsdc']) for m in PantaClient().primary_markets()]"`
+immediately before you record and read what is actually on screen. Do not memorise these.
+
+| Fact | Value at 20:13 |
 |---|---|
-| Tradeable markets on Panta | **2** (`open`). Was 1 in the morning — the venue added one. |
-| Market 1 | *Will BTC reach a new all-time high by December 31, 2026?* — YES **0.5054**, vol **3.25 USDC** |
-| Market 2 | *Will Ral Andrew take first place in the ongoing Panta X …* — YES **0.5323**, vol **20.00 USDC** |
-| Total markets on venue | 99 (2 `open`, 97 `secondary_active`) |
-| A full decision round | **~45–65 seconds** (Estimator alone measured at 46s once) |
+| Tradeable markets on Panta | **1** (`primary`). Was 2 at 18:00 — the venue retired one. |
+| That market | *Will BTC reach a new all-time high by December 31, 2026?* |
+| YES price | **0.4972** (49.7%) |
+| Volume | **8.35 USDC** |
+| Total markets on venue | 99 (1 primary, 7 secondary, 92 resolved) |
+| A full decision round | **~40–65 seconds** per market |
 | Mode | `DRY_RUN=true` → PAPER. No funds, no signature, no broadcast. |
 
-Venue counts move and Panta renames status values (`primary`→`open` mid-day). Re-check before
-recording and quote the date alongside any number. Do not promise a market count on camera.
+Panta renames status values without notice — during 2026-10-12 alone `primary` became `open` and
+back again, and the secondary count swung from 97 to 7. `panta.py` normalises all of it, so the
+product is unaffected; only your narration is at risk. **Never promise a market count on camera.**
+
+If asked how many markets are tradeable, the honest and much stronger answer is: *"One right now,
+and it moves — which is exactly why the desk says HOLD most of the time."*
 
 ### 0.5 Facts you must NOT state
 
 - ❌ Any profit, ROI, win-rate, or "beats the market" claim. There is none.
-- ❌ Any claim of deep liquidity. There is 3.25 USDC of volume.
+- ❌ Any claim of deep liquidity. There are **8.35 USDC** of volume today — single digits.
 - ❌ Any claim that a trade was executed. Nothing has ever been broadcast.
 - ❌ Any suggestion that the dashboard numbers are historical performance. They are decisions, not P&L.
 - ❌ **Any claim that the Estimator is reliable, or that the four roles "verify" the estimate.**
   Measured on this exact market: the Estimator returned **0.51, 0.55, then 0.98** across three runs
   — and the more extreme the estimate, the *higher* its self-reported confidence (0.98 @ confidence
   0.95, uncertainty "low"). The 0.98 run cleared the 15% edge bar and produced a `BUY YES`, which
-  then failed at the API (`INVALID_MARKET_PARAMS` — the market has null price and null volume, so it
-  is not actually tradeable). Risk did not catch it, because Risk checks caps and liquidity, not the
-  estimate itself.
+  then failed at the API (`INVALID_MARKET_PARAMS` — at the time the market had null price and null
+  volume). Risk did not catch it, because Risk checks caps and liquidity, not the estimate itself.
+  Note the model has since changed (see README); the architectural gap remains.
 
   If a judge asks whether the agents are reliable, say this plainly. The honest answer is stronger
   than a vague one: the pipeline verifies *process* — every role ran and every step is auditable —

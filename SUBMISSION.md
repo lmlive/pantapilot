@@ -93,15 +93,15 @@ every agent step, every decision. A captured sample run ships in the repo at
 
 **What the live venue currently looks like (sampled 2026-10-12).** The venue is small and its
 status vocabulary moves, so treat these as a snapshot rather than a constant. Of 99 markets
-returned by `/markets/` on the afternoon of 2026-10-12: **97 `secondary_active`, 2 `open`.**
-Only the `open` markets are tradeable, and the ones we saw carried thin volume — 3.25 USDC and
-20.00 USDC. A live scan therefore analyzes a very small opportunity set, and the Decision agent's
-disciplined answer is often `HOLD`.
+returned by `/markets/` on the evening of 2026-10-12: **92 `resolved`, 7 `secondary`, and exactly
+1 `primary` (tradeable).** That single market carried **8.35 USDC** of volume. A live scan therefore
+analyzes a very small opportunity set, and the Decision agent's disciplined answer is often `HOLD`.
 
-Note that Panta renamed its status values during the day (`primary`→`open`, `resolved`→absent).
-`panta.py` already normalises these (`_PRIMARY_ALIASES` accepts `primary`/`open`/`trading`, and
-deliberately keeps `secondary_active` out of primary), so the scanner keeps working across the
-rename — but any figure quoted here ages quickly, which is why we give the date.
+The volatility of these figures is itself part of the story. Across one day the tradeable count went
+1 → 2 → 1, and Panta renamed its status values (`primary`→`open` and back). `panta.py` normalises all
+of it (`_PRIMARY_ALIASES` accepts `primary`/`open`/`trading`, and deliberately keeps `secondary` out of
+primary), so the scanner kept working through every change — but any count quoted here ages within
+hours, which is why we date it and tell you to re-check.
 
 **We tried to backtest it, and we are reporting the null result.** `backtest_real.py`
 pulls *real* settled markets (not hand-written samples) and evaluates the strategy's

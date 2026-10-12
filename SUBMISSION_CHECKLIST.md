@@ -149,12 +149,13 @@ python -m unittest test_agents.py   # 14 offline tests, no network
 
 ## 8. Known limitations to state honestly if asked
 
-- **Venue liquidity is the binding constraint.** As of 2026-10-12 (afternoon): 99 markets,
-  2 tradeable (`open`), 97 `secondary_active`. The two tradeable ones carried 3.25 and 20.00 USDC
-  of volume. Settled markets we could measure resolved within 1.8% of 50/50. No claimable edge yet.
-- **Panta renames its status values without notice.** During 2026-10-12 alone, `primary` became
-  `open` and the `resolved` count disappeared. `panta.py` normalises these (`_PRIMARY_ALIASES`), so
-  the scanner survives the rename — but never quote a venue count without its date.
+- **Venue liquidity is the binding constraint.** As of 2026-10-12 (evening): 99 markets, exactly
+  1 tradeable (`primary`), 7 `secondary`, 92 resolved. The tradeable market carried 8.35 USDC of
+  volume. Settled markets we could measure resolved within 1.8% of 50/50. No claimable edge yet.
+- **Panta renames its status values and changes counts without notice.** During 2026-10-12 alone the
+  tradeable count went 1 → 2 → 1, `primary` became `open` and back, and the secondary count swung
+  from 97 to 7. `panta.py` normalises all of it (`_PRIMARY_ALIASES`), so the scanner survives — but
+  never quote a venue count without its date.
 - **The Estimator can be confidently wrong, and nothing downstream catches it.** Measured on one
   market and one model: 0.51, 0.55, then 0.98 across three runs, with self-reported confidence
   *rising* as the estimate got worse (0.98 at confidence 0.95, uncertainty "low"). The 0.98 run
