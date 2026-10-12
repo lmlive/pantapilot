@@ -5,6 +5,7 @@
 **🎬 Demo video (90s): [`docs/demo.mp4`](docs/demo.mp4)** — a real live-API run: terminal, four-agent pipeline, the decision evidence chain, and the dashboard.
 
 **📄 Full submission write-up: [`SUBMISSION.md`](SUBMISSION.md)**
+**📋 Submission checklist & paste-ready text: [`SUBMISSION_CHECKLIST.md`](SUBMISSION_CHECKLIST.md)**
 
 **PantaPilot** scans Panta's prediction markets around the clock, uses an LLM to find mispriced events, and places small trades when it detects a real edge. The core loop:
 
