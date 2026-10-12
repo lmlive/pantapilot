@@ -85,10 +85,13 @@ disciplined answer is often `HOLD`.
 
 **We tried to backtest it, and we are reporting the null result.** `backtest_real.py`
 pulls *real* settled markets (not hand-written samples) and evaluates the strategy's
-own selection rule against the real pre-resolution price and the real outcome:
+own selection rule against the real pre-resolution price and the real outcome.
+
+The count moves as markets settle, so run it yourself rather than trusting a number
+transcribed here. A representative run on 2026-10-12 returned:
 
 ```
-Settled markets with usable price+outcome: 11
+Settled markets with usable price+outcome: 8
 Actionable (edge >= 15%, volume >= 10 USDC): 0
 Max |entry - 0.50| observed: 0.018
 ```

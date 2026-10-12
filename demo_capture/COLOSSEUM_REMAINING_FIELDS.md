@@ -1,7 +1,11 @@
 # Colosseum 项目提交 · 剩余字段（复制粘贴用）
 
+> ✅ **更新（2026-10-12 17:00）：`Project details` 已显示 Complete，本文档第 1-10 节
+> 的内容作者已手填成功，无需再填。** 保留作为文案存档。
+> 当前剩余的 4 个待填字段全部在 **`Media and code`** 标签页，见下方第 11 节。
+
 项目草稿已创建：**PantaPilot**，类别 **AI Platforms / Agents**
-编辑页：https://colosseum.com/arena/hackathon/project/editor?section=details
+编辑页：https://colosseum.com/arena/hackathon/project/editor?section=media
 
 > ⚠️ **保存方式**：这个编辑器长文本**不自动保存**。填完所有字段后
 > **点一次 `Save draft`（或 `Save and view project`）**，再刷新确认。
@@ -118,3 +122,58 @@ Two things. First, our demo video's terminal scene is a faithful re-drawing of r
 - [ ] 去 **Superteam Earn** 用同样内容再交一次（双平台都要交）
 
 提交截止：**2026-10-12 23:59 PDT = 北京时间 10-13 14:59**
+
+---
+
+# 11. `Media and code` 标签页（当前唯一待填区域）
+
+页面：https://colosseum.com/arena/hackathon/project/editor?section=media
+
+## 4 个必填字段（评委原文）
+
+| # | 字段 | 原文要求 |
+|---|---|---|
+| 1 | **Project logo or graphic** * Public | "JPEG, PNG, WebP, or GIF, up to 20 MB before compression. Images are optimized to 0.5 MB; GIFs must already fit that limit." |
+| 2 | **GitHub link** * Public | "Please provide a direct link to your project's GitHub repository (for example, https://github.com/user/repo). **Links to organizations or user profiles are not supported.** This should be the code you wrote during the hackathon." |
+| 3 | **Demo video** * | "**YouTube, Loom, or Vimeo. Up to 3 minutes. Should show the live product, not a slide deck, not a code walkthrough.**" |
+| 4 | **Pitch video** * Public | "Separate from the demo video — introduce yourselves, tell us what you're building, and tell us why you're the people to build it. Nothing fancy required. We're interested in how you think and communicate. **YouTube, Loom, or Vimeo. Up to 2 minutes.**" |
+
+## 建议填入值
+
+| 字段 | 值 |
+|---|---|
+| Project logo or graphic | `pantapilot/docs/logo.png`（上传文件） |
+| GitHub link | `https://github.com/lmlive/pantapilot` |
+| Demo video | 待录制上传后填入（≤3 分钟） |
+| Pitch video | 待录制上传后填入（≤2 分钟） |
+| X profile | （选填） |
+
+## 4 个选填字段
+
+| 字段 | 上限 | 建议 |
+|---|---|---|
+| Please share any important context about your repo | 500 | 见下方文案 |
+| Live product link | — | 看板是本地渲染的静态页，无公网链接；可留空 |
+| Access instructions | — | DRY_RUN 默认、无需凭据，可留空或说明 |
+| Show demo video on the public project page | 勾选框 | 建议勾选 |
+
+**"Please share any important context about your repo"（上限 500）**
+
+```
+This repo is the complete submission. DRY_RUN=true is the default, so the full
+four-agent pipeline runs with no wallet and no capital at risk - reproducible
+with one command. logs/ is gitignored by design: the JSONL audit trail is
+generated locally at runtime. Any decision older than 2026-10-12 in the demo
+dashboard is labelled by pipeline provenance (full four-agent vs degraded
+single-agent fallback).
+```
+
+## ⚠️ 关于仓库可见性的重要提示
+
+评委原文："you may keep it private and share it with hackathon@colosseum.com so only
+the judges can review."
+
+**我们的仓库已经是 public**，匿名访问返回 200，这部分没有问题。
+但 `.env` 和 `logs/` 已在 `.gitignore` 中，匿名访问返回 404 —— 这是正确的，
+不要为了"方便评委"把它们提交上去。
+
