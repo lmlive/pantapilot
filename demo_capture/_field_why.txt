@@ -1,0 +1,5 @@
+Short-horizon prediction markets reprice faster than any human can watch. Retail traders cannot monitor dozens of markets all day, so mispricings appear and vanish before anyone acts. The gap is not a lack of models - it is a lack of an always-on desk that can deliberate and act.
+
+We built it now because Panta exposes a genuine non-custodial order chain over a real API, which makes an autonomous agent meaningful rather than theoretical: it can scan, reason, and reach execution without us holding user funds.
+
+We also wanted to test an uncomfortable hypothesis honestly. A real backtest against settled markets showed Panta's venue is still thin - one tradeable market, settlements within 1.8% of 50/50. There is no mispricing history to claim profit from yet. We report that null result rather than fabricate a win rate, because an agent that lies about its edge is worse than no agent.

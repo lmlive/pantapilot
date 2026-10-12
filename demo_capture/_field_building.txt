@@ -1,0 +1,12 @@
+PantaPilot is an autonomous trading desk for Panta prediction markets, for traders who cannot watch dozens of short-horizon markets all day.
+
+Most AI trading bots are one prompt and one guess. PantaPilot runs four roles that deliberate before any order:
+
+1. Scout - pulls the market oracle sources, then falls back to live web search.
+2. Estimator - independently prices the true probability with an uncertainty label, before seeing any trade decision.
+3. Decision - compares market-implied odds against the model estimate, trading only when the gap is material.
+4. Risk - holds veto over caps, liquidity and rationale quality; a veto forces HOLD.
+
+Consensus then flows through Panta's real 5-step order chain against the production API (quote, build, sign, submit, verify). DRY_RUN is the default, so anyone can reproduce it with no capital at risk.
+
+Every agent step is logged to JSONL and rendered as an expandable evidence chain on a dashboard, so a human can audit exactly why an order happened.
