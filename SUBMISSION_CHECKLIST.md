@@ -32,7 +32,7 @@ your account and email verification. Earn alone does not count (double submissio
 | Dashboard snapshot | `https://raw.githubusercontent.com/lmlive/pantapilot/master/docs/dashboard_full.png` |
 | Track | Panta API Sidetrack ($5,000) · Colosseum Crypto World's Fair |
 | Stack | Python, Panta REST API, Solana (solders/base58), OpenAI-compatible LLM, static HTML dashboard |
-| License / cost to run | Runs free — paper mode by default, needs only a free OpenRouter key |
+| License / cost to run | Runs free — paper mode by default, needs only a free OpenAI-compatible LLM key (we use `meituan/longcat-2.5-preview:free`) |
 
 ---
 
@@ -140,7 +140,7 @@ git clone https://github.com/lmlive/pantapilot.git
 cd pantapilot
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env          # add a free OpenRouter key; PANTA_API_KEY optional for paper mode
+cp .env.example .env          # add any OpenAI-compatible LLM key; PANTA_API_KEY optional for paper mode
 
 python main.py                # live scan -> 4-agent desk -> logs/ + dashboard
 python backtest_real.py       # the honest null backtest (real settled markets)

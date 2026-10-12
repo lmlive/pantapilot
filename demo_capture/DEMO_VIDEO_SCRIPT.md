@@ -106,7 +106,7 @@ Legend — **[LIVE]** = must be captured from the real running product, cannot b
 **Live terminal lines the camera must show** (from `main.py` + `logger.py`):
 
 ```
-INFO pantapilot.main: PantaPilot 启动 mode=PAPER interval=... max_trade=5.0USDC model=cohere/north-mini-code:free
+INFO pantapilot.main: PantaPilot 启动 mode=PAPER interval=... max_trade=5.0USDC model=meituan/longcat-2.5-preview:free
 INFO pantapilot.main: 决策引擎: 多角色 Agent 团队 (Scout>Estimator>Decision>Risk)
 INFO httpx: HTTP Request: GET https://live-api.panta.market/api/v1/markets/ "HTTP/1.1 200 OK"
 INFO pantapilot.main: 本轮扫描到 1 个 primary 市场

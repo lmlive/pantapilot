@@ -175,7 +175,7 @@ pip install -r requirements.txt
 
 # Configure your environment
 cp .env.example .env
-# Edit .env with your PANTA_API_KEY and LLM_API_KEY (defaults to free OpenRouter model)
+# Edit .env: LLM_BASE_URL / LLM_API_KEY / LLM_MODEL (any OpenAI-compatible endpoint)
 
 # Run in paper mode (scans live markets, runs the 4-agent desk, writes logs/, renders dashboard)
 python main.py

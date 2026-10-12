@@ -27,7 +27,7 @@ main.py         Orchestrator: scan → analyze → trade → log → dashboard l
 panta.py        Panta HTTP API client (markets + 5-step order chain)
 agents.py       Multi-agent team: Estimator → Decision → Risk
 scout.py        Scout: intel gathering (oracle sources + web search)
-llm.py          Single-agent fallback (OpenAI-compatible / OpenRouter)
+llm.py          Single-agent fallback (any OpenAI-compatible endpoint)
 trader.py       Order execution (dry-run semi-chain + full live chain)
 logger.py       JSONL event logging
 dashboard.py    Static self-refreshing HTML dashboard (with evidence chain)
@@ -123,9 +123,14 @@ JSONL at `logs/pantapilot.jsonl`, one event per line with `ts` (UTC ISO) and eve
 
 ## Stack
 
-Python · httpx · solders · base58 · openai (OpenRouter) · python-dotenv
+Python · httpx[socks] · solders · base58 · openai (any OpenAI-compatible endpoint) · python-dotenv
 
-LLM: OpenRouter `cohere/north-mini-code:free` (verified working).
+LLM: any OpenAI-compatible chat endpoint — set `LLM_BASE_URL`, `LLM_API_KEY` and `LLM_MODEL`
+in `.env`. Currently running `meituan/longcat-2.5-preview:free` on Nous Research
+(`https://inference-api.nousresearch.com/v1`). We moved off OpenRouter's
+`cohere/north-mini-code:free` after its quota ran out, and it turned out to be the better model:
+on the same market it returned 0.50 and 0.58 where the previous one once returned 0.98 with
+"low uncertainty", which had produced a spurious BUY.
 
 ---
 
