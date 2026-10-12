@@ -20,6 +20,26 @@ from openai import OpenAI
 
 import config
 from llm import _normalize, _parse_json
+
+
+def _as_float(value: Any, default: float | None = None) -> float | None:
+    """Best-effort float coercion for values that came out of an LLM.
+
+    A model that cannot judge a market writes `null` (or "N/A", "unknown"), and
+    `float(None)` raises TypeError. That exception escaped `analyze()` - which has
+    no try/except - and killed the process silently right after the HTTP 200, so
+    the terminal simply stopped with no error and no further log line. Coerce
+    instead of trusting the model's JSON shape.
+    """
+    if value is None or isinstance(value, bool):
+        return default
+    try:
+        out = float(value)
+    except (TypeError, ValueError):
+        return default
+    if out != out:  # NaN
+        return default
+    return out
 from scout import gather_intel, summarize_for_prompt
 
 log = logging.getLogger("pantapilot.agents")
@@ -127,7 +147,10 @@ class AgentTeam:
         log.info("[pipeline 2/4] Estimator 独立估算中 (LLM 调用，最长约 %ds)...", int(config.LLM_TIMEOUT_SECONDS))
         est = self._ask(ESTIMATOR_PROMPT, est_user)
         if est:
-            log.info("[pipeline 2/4] Estimator 完成: YES=%.2f", float(est.get("true_prob_yes", 0.0)))
+            log.info(
+                "[pipeline 2/4] Estimator 完成: YES=%s",
+                _as_float(est.get("true_prob_yes"), float("nan")),
+            )
         else:
             log.warning("[pipeline 2/4] Estimator 失败，将降级为单 agent 分析")
 
@@ -146,19 +169,21 @@ class AgentTeam:
 
         benchmark: dict[str, Any] | None = None
         if est and isinstance(est, dict):
-            try:
-                est_prob = float(est.get("true_prob_yes", 0.0))
-                if implied_yes is not None:
-                    gap = est_prob - implied_yes
-                    gap_pct = gap * 100
-                    benchmark = {
-                        "market_implied": round(implied_yes, 4),
-                        "estimator_prob": round(est_prob, 4),
-                        "gap": round(gap, 4),
-                        "gap_pct": f"{gap_pct:+.1f}%",
-                    }
-            except (ValueError, TypeError):
-                pass
+            est_prob = _as_float(est.get("true_prob_yes"))
+            if est_prob is None:
+                log.warning(
+                    "[pipeline] Estimator 未给出可用的 true_prob_yes (%r) - 跳过基准对比",
+                    est.get("true_prob_yes"),
+                )
+            elif implied_yes is not None:
+                gap = est_prob - implied_yes
+                gap_pct = gap * 100
+                benchmark = {
+                    "market_implied": round(implied_yes, 4),
+                    "estimator_prob": round(est_prob, 4),
+                    "gap": round(gap, 4),
+                    "gap_pct": f"{gap_pct:+.1f}%",
+                }
 
         # ③ Decision：对比找 edge
         if est:

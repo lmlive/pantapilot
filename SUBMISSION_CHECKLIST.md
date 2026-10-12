@@ -149,8 +149,17 @@ python -m unittest test_agents.py   # 14 offline tests, no network
 
 ## 8. Known limitations to state honestly if asked
 
-- **Venue liquidity is the binding constraint.** As of 2026-10-12: 98 markets, 1 `primary`
-  (tradeable), 92 settled, all settled ones within 1.8% of 50/50. No claimable edge yet.
+- **Venue liquidity is the binding constraint.** As of 2026-10-12 (afternoon): 99 markets,
+  2 tradeable (`open`), 97 `secondary_active`. The two tradeable ones carried 3.25 and 20.00 USDC
+  of volume. Settled markets we could measure resolved within 1.8% of 50/50. No claimable edge yet.
+- **Panta renames its status values without notice.** During 2026-10-12 alone, `primary` became
+  `open` and the `resolved` count disappeared. `panta.py` normalises these (`_PRIMARY_ALIASES`), so
+  the scanner survives the rename — but never quote a venue count without its date.
+- **The Estimator can be confidently wrong, and nothing downstream catches it.** Measured on one
+  market and one model: 0.51, 0.55, then 0.98 across three runs, with self-reported confidence
+  *rising* as the estimate got worse (0.98 at confidence 0.95, uncertainty "low"). The 0.98 run
+  produced a `BUY_YES`; Risk approved it, because Risk checks caps and liquidity rather than
+  re-deriving the estimate. State this if asked — do not claim the roles "verify" the estimate.
 - **The LLM is a free-tier model.** Occasional failed calls are expected; the pipeline
   degrades to single-agent analysis and the dashboard labels the Estimator `unavailable`
   rather than inventing a number.

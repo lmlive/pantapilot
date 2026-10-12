@@ -91,11 +91,17 @@ every agent step, every decision. A captured sample run ships in the repo at
 [`demo_capture/run.jsonl`](demo_capture/run.jsonl) (regenerate it with
 `python run_demo_capture.py`; live runs write to the gitignored `logs/`).
 
-**What the live venue currently looks like (sampled 2026-10-12).** Of 98 markets returned
-by `/markets/`: **92 settled, 97 in `secondary`, and exactly 1 in `primary` (tradeable).**
-That single primary market returned `yesPrice: null`, `noPrice: null` and zero volume.
-A live scan therefore analyzes a very small opportunity set, and the Decision agent's
+**What the live venue currently looks like (sampled 2026-10-12).** The venue is small and its
+status vocabulary moves, so treat these as a snapshot rather than a constant. Of 99 markets
+returned by `/markets/` on the afternoon of 2026-10-12: **97 `secondary_active`, 2 `open`.**
+Only the `open` markets are tradeable, and the ones we saw carried thin volume — 3.25 USDC and
+20.00 USDC. A live scan therefore analyzes a very small opportunity set, and the Decision agent's
 disciplined answer is often `HOLD`.
+
+Note that Panta renamed its status values during the day (`primary`→`open`, `resolved`→absent).
+`panta.py` already normalises these (`_PRIMARY_ALIASES` accepts `primary`/`open`/`trading`, and
+deliberately keeps `secondary_active` out of primary), so the scanner keeps working across the
+rename — but any figure quoted here ages quickly, which is why we give the date.
 
 **We tried to backtest it, and we are reporting the null result.** `backtest_real.py`
 pulls *real* settled markets (not hand-written samples) and evaluates the strategy's

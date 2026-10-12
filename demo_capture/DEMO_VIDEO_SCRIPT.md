@@ -44,17 +44,19 @@ Hide bookmarks and the tab strip if your recorder allows; no other tabs, no emai
 - **Right 40%:** dashboard tab.
 - **Full screen / hide the desktop.** Nothing on screen should suggest a laptop in a bedroom.
 
-### 0.4 Facts you may state on camera (all verified 2026-10-12)
+### 0.4 Facts you may state on camera (verified 2026-10-12 afternoon)
 
 | Fact | Verified value |
 |---|---|
-| Tradeable markets on Panta | **1** primary, not resolved |
-| That market | *Will BTC reach a new all-time high by December 31, 2026?* |
-| YES price | **0.5054** (50.5%) |
-| 24h volume | **3.25 USDC** |
-| Total markets on venue | 98 (1 primary, 92 settled) |
-| A full decision round | **~30 seconds** |
+| Tradeable markets on Panta | **2** (`open`). Was 1 in the morning — the venue added one. |
+| Market 1 | *Will BTC reach a new all-time high by December 31, 2026?* — YES **0.5054**, vol **3.25 USDC** |
+| Market 2 | *Will Ral Andrew take first place in the ongoing Panta X …* — YES **0.5323**, vol **20.00 USDC** |
+| Total markets on venue | 99 (2 `open`, 97 `secondary_active`) |
+| A full decision round | **~45–65 seconds** (Estimator alone measured at 46s once) |
 | Mode | `DRY_RUN=true` → PAPER. No funds, no signature, no broadcast. |
+
+Venue counts move and Panta renames status values (`primary`→`open` mid-day). Re-check before
+recording and quote the date alongside any number. Do not promise a market count on camera.
 
 ### 0.5 Facts you must NOT state
 
