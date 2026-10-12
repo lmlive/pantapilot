@@ -1,0 +1,26 @@
+==============================================================================
+ PantaPilot — LIVE RUN  |  4-Agent Trading Desk on Panta Prediction Markets
+ mode=DRY_RUN(paper)  max_trade=5.0 USDC  min_confidence=0.6
+==============================================================================
+
+[1/3] Scanning live Panta markets ...
+  -> 1 primary (tradeable) markets returned by Panta API
+  -> curated 1 high-signal markets for this session
+
+[2/3] Running Scout -> Estimator -> Decision -> Risk on each market
+
+  [1/1] Will BTC reach a new all-time high by December 31, 2026?
+        Scout    : gathering oracle + web intel ...
+        Estimator: true_prob_yes=0.505 (confidence 0.6)
+        Benchmark: market 0.5054 vs model 0.505  edge=-0.0%
+        Decision : HOLD  (confidence 0.50)
+        Risk     : approved=True -- HOLD approved per policy
+        => HOLD  (confidence 0.50)
+
+[3/3] Rendering dashboard ...
+  -> dashboard/index.html  (1 decisions, 0 BUY signals, 1 HOLD)
+
+==============================================================================
+ SUMMARY  markets=1  analyzed=1  buy=0  hold=1  trades=0
+ log=run.jsonl   paper mode: no funds at risk
+==============================================================================

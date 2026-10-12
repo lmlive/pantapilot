@@ -13,6 +13,11 @@ venv/
 logs/
 dashboard/index.html
 
+# 视频/看板构建中间产物（仅保留 docs/ 下的成品与 demo_capture 的录制证据）
+demo_capture/video/
+demo_capture/run_raw.txt
+demo_capture/_dashboard_norefresh.html
+
 # 其它
 .DS_Store
 *.log

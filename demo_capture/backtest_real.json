@@ -1,0 +1,125 @@
+{
+  "settled_markets_seen": 11,
+  "actionable_trades": 0,
+  "skipped_no_edge_or_illiquid": 11,
+  "wins": 0,
+  "losses": 0,
+  "win_rate_pct": 0.0,
+  "invested_usdc": 0.0,
+  "net_pnl_usdc": 0,
+  "roi_pct": 0.0,
+  "max_entry_deviation_from_050": 0.018,
+  "trades": [],
+  "passes": [
+    {
+      "marketId": "9ArgG5SQf9T6QbVWEjNwpBpNkdPjNWNTNB15nkdivv15",
+      "title": "Will Arsenal beat Leeds United on October 10, 2026?",
+      "category": "sports",
+      "entry_yes": 0.51684771,
+      "outcome": "YES",
+      "volume_usdc": 323.036406,
+      "oracle": "https://www.espn.com",
+      "pass_reason": "no_material_edge"
+    },
+    {
+      "marketId": "3z5yKwkE5Ds926uzxaVtuE3zpYDg7zj4KXwhQZHVbj9P",
+      "title": "Will it rain anywhere in London before 9pm BST on October 5th, 2026?",
+      "category": "science",
+      "entry_yes": 0.498286763,
+      "outcome": "NO",
+      "volume_usdc": 12.0,
+      "oracle": "https://www.metoffice.gov.uk",
+      "pass_reason": "no_material_edge"
+    },
+    {
+      "marketId": "2vydGh1EPCCbzBncAZFcAbiiWZ9A6uuxt3Ay9Lf3qdZU",
+      "title": "Will bitcoin hit 85k in by October 4th 2026 1am WAT",
+      "category": "crypto",
+      "entry_yes": 0.504942094,
+      "outcome": "YES",
+      "volume_usdc": 12.0,
+      "oracle": "https://www.coingecko.com,https://coinmarketcap.com,https://www.coinbase.com,https://www.binance.com",
+      "pass_reason": "no_material_edge"
+    },
+    {
+      "marketId": "5cyMGUVDcToJ8ws5V1sKkGnzthLrLTsqEjo3Pa2HNU8v",
+      "title": "France will concede in the first 25 minutes against Belgium on the 05 October.",
+      "category": "sports",
+      "entry_yes": 0.506406474,
+      "outcome": "NO",
+      "volume_usdc": 39.0,
+      "oracle": "https://www.fifa.com,https://www.uefa.com",
+      "pass_reason": "no_material_edge"
+    },
+    {
+      "marketId": "4J6WxFGuCw9deMJ6pQ7gwpVXCvLorMrz28icSnCYWeGB",
+      "title": "Manchester United will win against Spurs with 2 or more goals",
+      "category": "sports",
+      "entry_yes": 0.518009008,
+      "outcome": "NO",
+      "volume_usdc": 16.0,
+      "oracle": "https://www.espn.com,https://www.bbc.com/sport,https://www.premierleague.com",
+      "pass_reason": "no_material_edge"
+    },
+    {
+      "marketId": "AWesFhQ1uQXwsMBE2EPRVqKD6iG8GqiU2KMSkAeFqrb4",
+      "title": "[TEST] BTC >= 1000 USD",
+      "category": "crypto",
+      "entry_yes": 0.5,
+      "outcome": "YES",
+      "volume_usdc": 10.0,
+      "oracle": "https://www.coingecko.com",
+      "pass_reason": "no_material_edge"
+    },
+    {
+      "marketId": "EhehvNMYdPsJFy288rqHySX4hK6kY6Z6WZ21YKhncdXQ",
+      "title": "Will the marketcap of SOLANA drop to $11 billion ?",
+      "category": "crypto",
+      "entry_yes": 0.486839856,
+      "outcome": "NO",
+      "volume_usdc": 13.0,
+      "oracle": "https://www.coingecko.com",
+      "pass_reason": "no_material_edge"
+    },
+    {
+      "marketId": "4PXNDkRxNEbVrp6gRx9gs3zqkA8XgmHNfVEJ1jCwNpEt",
+      "title": "WILL $LAPTOP cross 20 billion dollars from now until the next 1 hour ?",
+      "category": "crypto",
+      "entry_yes": 0.497727686,
+      "outcome": "YES",
+      "volume_usdc": 20.6,
+      "oracle": "https://www.coingecko.com",
+      "pass_reason": "no_material_edge"
+    },
+    {
+      "marketId": "GeBYoNa966zcF1oJ2w8h2WkCLsjwyzsg7iy88kzju2hK",
+      "title": "Will ETH be above $5,000 within the next 1hr ?",
+      "category": "crypto",
+      "entry_yes": 0.491734977,
+      "outcome": "NO",
+      "volume_usdc": 10.0,
+      "oracle": "https://www.coingecko.com",
+      "pass_reason": "no_material_edge"
+    },
+    {
+      "marketId": "GKebvYjZPe7QPrHPnNSsBL4t62JYBzhRdb2qB1dACS8e",
+      "title": "Will BTC drop to $5,000 in the next 1 hour?",
+      "category": "crypto",
+      "entry_yes": 0.5,
+      "outcome": "NO",
+      "volume_usdc": 5.0,
+      "oracle": "https://www.coingecko.com",
+      "pass_reason": "illiquid"
+    },
+    {
+      "marketId": "3oAkiYpE2H7gJRok3w3YcGWfhrsM4kXAXnKYH7iLokaC",
+      "title": "Will $zcat memecoin surpass $500million in the next 1hour ?",
+      "category": "crypto",
+      "entry_yes": 0.4983141,
+      "outcome": "NO",
+      "volume_usdc": 10.0,
+      "oracle": "https://www.coingecko.com",
+      "pass_reason": "no_material_edge"
+    }
+  ]
+}

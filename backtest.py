@@ -1,10 +1,17 @@
-"""回测与历史战绩复盘模块 (P2 回测统计)
+"""Illustrative walkthrough on a SAMPLE portfolio — NOT traction evidence (P2 回测统计).
 
-对已结算市场 (resolved) 进行模拟决策与回测验证：
-- 提取市场初始价格与最终结算结果
-- 评估四角色团队（或模型）在历史错误定价时的下注决策
-- 统计胜率 (Win Rate) 与模拟资金收益 (Simulated PnL)
-- 产出清晰数据，为评委呈现扎实的技术说服力 (Traction)
+⚠️  READ THIS BEFORE CITING ANY NUMBER FROM THIS FILE.
+The list below is hand-authored: each entry's `oracleOutcome` was written by hand to
+match its own `decision`, and no Panta API call is made anywhere in this module
+(`PantaClient` is imported but unused). It therefore trivially reports a 100% win rate
+and is NOT a measurement of the strategy.
+
+For the honest, data-backed version that pulls real settled markets from the live Panta
+API and reports the real (currently null) result, run:
+
+    .venv/bin/python backtest_real.py
+
+Keep this file only as a readable illustration of how a settled market maps to a P&L.
 """
 from __future__ import annotations
 

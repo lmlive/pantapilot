@@ -90,12 +90,18 @@ def _pipeline_flow(rec: dict[str, Any]) -> str:
             val_f = float(est_prob)
             est_stat = f"YES {val_f:.2f} ({val_f*100:.0f}%)"
         except (ValueError, TypeError):
-            est_stat = "YES --"
+            est_stat = "unavailable"
     else:
-        est_stat = "YES --"
+        # The Estimator LLM call can legitimately fail (free-model flakiness); the
+        # pipeline degrades gracefully instead of dying. Say so rather than printing
+        # "YES --", which reads like a real estimate of zero.
+        est_stat = "unavailable"
     est_conf = est.get("confidence")
     est_unc = est.get("uncertainty", "med")
-    est_desc = f"conf {est_conf or 0:.2f} · unc {_esc(est_unc)}"
+    if est_prob is None:
+        est_desc = "estimator call failed · degraded"
+    else:
+        est_desc = f"conf {est_conf or 0:.2f} · unc {_esc(est_unc)}"
 
     # ③ Decision & Benchmark 对比
     dec_val = d.get("decision", "HOLD")
@@ -228,6 +234,13 @@ def render_dashboard(
 
     mode = "LIVE" if not config.DRY_RUN else "PAPER"
     mode_cls = "mode-live" if not config.DRY_RUN else "mode-paper"
+    # The source badge must describe REALITY: data comes from the live Panta API in both
+    # modes, but only a non-dry run actually deploys capital. Never show "LIVE" next to
+    # "PAPER" -- that reads as a claim of live trading.
+    if config.DRY_RUN:
+        live_label, live_cls = "LIVE API DATA", "live"
+    else:
+        live_label, live_cls = "LIVE TRADING", "live"
     updated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     market_count = stats.get("markets", len(markets or []))
 
@@ -325,7 +338,7 @@ def render_dashboard(
 <body>
   <div class="header">
     <h1>PantaPilot</h1>
-    <span class="live">LIVE</span>
+    <span class="{live_cls}">{live_label}</span>
     <span class="{mode_cls}">{mode}</span>
     <span class="updated">Updated {updated} · {market_count} markets</span>
   </div>

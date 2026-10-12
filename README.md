@@ -2,9 +2,18 @@
 
 > AI prediction-market trading agent — Colosseum Crypto World's Fair hackathon · Panta API Sidetrack ($5,000)
 
+**🎬 Demo video (90s): [`docs/demo.mp4`](docs/demo.mp4)** — a real live-API run: terminal, four-agent pipeline, the decision evidence chain, and the dashboard.
+
+**📄 Full submission write-up: [`SUBMISSION.md`](SUBMISSION.md)**
+
 **PantaPilot** scans Panta's prediction markets around the clock, uses an LLM to find mispriced events, and places small trades when it detects a real edge. The core loop:
 
 **Scan markets → gather intel → estimate probability → find edge → risk check → place order on edge → log decision → render dashboard**
+
+> **Honest status:** the integration is real and runs against the production Panta API, but the
+> venue currently has **1 tradeable market** and almost no mispricing history — so the strategy
+> correctly returns `HOLD` and **we claim no trading profit**. See the Traction & Evidence section
+> of [`SUBMISSION.md`](SUBMISSION.md), and run `python backtest_real.py` to reproduce the null result.
 
 ## Why
 
