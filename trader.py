@@ -55,17 +55,21 @@ class Trader:
             return result
 
         try:
+            # NOTE: each stage label is set BEFORE its call, not after. Setting it after means a
+            # throwing call reports the *previous* stage: a quote failure surfaced as stage=build,
+            # and a build failure as stage=quote, sending anyone debugging the order chain to the
+            # wrong endpoint.
             # ① 询价
-            quote = self.client.primary_order_quote(self.wallet, market_id, side, amount)
             result["stage"] = "quote"
+            quote = self.client.primary_order_quote(self.wallet, market_id, side, amount)
             result["quote"] = quote
             quote_id = quote.get("quoteId")
             if not quote_id:
                 raise RuntimeError(f"quote 无 quoteId: {quote}")
 
             # ② 构建未签名交易
-            build = self.client.primary_order_build(quote_id, self.wallet)
             result["stage"] = "build"
+            build = self.client.primary_order_build(quote_id, self.wallet)
             result["build"] = build
 
             self.logger.trade_start(market_id, title, decision, amount, side)
@@ -78,15 +82,17 @@ class Trader:
                 return result
 
             # ③ 本地签名 + 广播
+            result["stage"] = "sign"
             signature = self._sign_and_send(build)
             result["signature"] = signature
-            result["stage"] = "submitted"
 
             # ④ submit
+            result["stage"] = "submit"
             submit_resp = self.client.primary_order_submit(signature, quote_id, self.wallet)
             result["submit"] = submit_resp
 
             # ⑤ verify
+            result["stage"] = "verify"
             verify_resp = self.client.primary_order_verify(signature)
             result["verify"] = verify_resp
 

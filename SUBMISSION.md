@@ -19,9 +19,23 @@ Instead of relying on a fragile, hallucinating single-prompt LLM or passive copy
 1. **🕵️ Scout (Intel Recon):** Intercepts live oracle settlement feeds and live web signals, filtering noise into grounded market facts.
 2. **📊 Estimator (Quant):** Independently assesses the *true probability* of the outcome, producing a calibrated forecast (e.g., YES @ 72%) with explicit uncertainty metrics.
 3. **🎯 Decision (Trader):** Measures the disparity between the market's implied odds and the Estimator's probability. When an edge exceeds **15%**, it decisively issues a `BUY` proposal with target position sizing.
-4. **🛡️ Risk (Risk Manager):** Holds absolute veto power—vetts volume liquidity, wallet caps (default ≤ 5 USDC), and rationale validity before stamping `PASSED`.
+4. **🛡️ Risk (Risk Manager):** Holds absolute veto power—vets volume liquidity, wallet caps (default ≤ 5 USDC), and rationale validity before stamping `PASSED`.
 
-Only when the team reaches verified consensus does PantaPilot execute the live transaction through Panta's 5-step non-custodial order chain.
+Only when all four roles complete without a Risk veto does PantaPilot attempt the live transaction
+through Panta's 5-step non-custodial order chain.
+
+**What that gate does and does not do — measured, not assumed.** The Risk agent validates position
+caps, venue liquidity and rationale completeness. It does **not** re-derive the estimate, so it
+cannot catch an Estimator that is confidently wrong. We observed this: on the same market and model,
+the Estimator returned 0.51, 0.55 and then **0.98** across three runs — and the more extreme the
+estimate, the *higher* the model's self-reported confidence (0.98 at confidence 0.95, uncertainty
+labelled "low"). That third run cleared the 15% edge threshold and produced a `BUY YES`, because a
+hallucinated estimate propagates straight through Decision and past Risk.
+
+Calling that "verified consensus" would overstate it. The pipeline verifies *process* — every role
+ran, every step is logged and auditable — not the correctness of the estimate. Closing that gap
+(an independent second estimator, or a sanity bound that rejects implausible probabilities) is the
+next thing we would build.
 
 ---
 

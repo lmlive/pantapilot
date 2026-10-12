@@ -62,6 +62,17 @@ Hide bookmarks and the tab strip if your recorder allows; no other tabs, no emai
 - ❌ Any claim of deep liquidity. There is 3.25 USDC of volume.
 - ❌ Any claim that a trade was executed. Nothing has ever been broadcast.
 - ❌ Any suggestion that the dashboard numbers are historical performance. They are decisions, not P&L.
+- ❌ **Any claim that the Estimator is reliable, or that the four roles "verify" the estimate.**
+  Measured on this exact market: the Estimator returned **0.51, 0.55, then 0.98** across three runs
+  — and the more extreme the estimate, the *higher* its self-reported confidence (0.98 @ confidence
+  0.95, uncertainty "low"). The 0.98 run cleared the 15% edge bar and produced a `BUY YES`, which
+  then failed at the API (`INVALID_MARKET_PARAMS` — the market has null price and null volume, so it
+  is not actually tradeable). Risk did not catch it, because Risk checks caps and liquidity, not the
+  estimate itself.
+
+  If a judge asks whether the agents are reliable, say this plainly. The honest answer is stronger
+  than a vague one: the pipeline verifies *process* — every role ran and every step is auditable —
+  and we have measured evidence of exactly where it currently fails.
 
 ---
 

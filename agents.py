@@ -111,12 +111,25 @@ class AgentTeam:
         返回兼容旧格式的决策 dict，额外附 evidence（供日志/看板）。
         """
         # ① Scout：情报搜集
+        log.info("[pipeline 1/4] Scout 收集中...")
         intel = gather_intel(market, enable_search=enable_search)
         intel_text = summarize_for_prompt(intel)
+        log.info(
+            "[pipeline 1/4] Scout 完成: %d 个来源 (oracle=%d, web=%d)",
+            int((intel.get("meta") or {}).get("oracleAttempts", 0))
+            + int((intel.get("meta") or {}).get("searchAttempts", 0)),
+            int((intel.get("meta") or {}).get("oracleAttempts", 0)),
+            int((intel.get("meta") or {}).get("searchAttempts", 0)),
+        )
 
         # ② Estimator：独立估算真实概率
         est_user = f"{market_text}\n\n---\n{intel_text}"
+        log.info("[pipeline 2/4] Estimator 独立估算中 (LLM 调用，最长约 %ds)...", int(config.LLM_TIMEOUT_SECONDS))
         est = self._ask(ESTIMATOR_PROMPT, est_user)
+        if est:
+            log.info("[pipeline 2/4] Estimator 完成: YES=%.2f", float(est.get("true_prob_yes", 0.0)))
+        else:
+            log.warning("[pipeline 2/4] Estimator 失败，将降级为单 agent 分析")
 
         # 提取市场隐含概率并计算基准对比（P2 对比基准）
         implied_yes: float | None = None
@@ -165,7 +178,13 @@ class AgentTeam:
             )
         else:
             dec_user = f"{market_text}\n\n---\n{intel_text}"
+        log.info("[pipeline 3/4] Decision 对比 market-implied 与 est...")
         dec = self._ask(DECISION_PROMPT, dec_user)
+        if dec:
+            log.info(
+                "[pipeline 3/4] Decision 完成: %s",
+                dec.get("decision") or dec.get("reason", "")[:60],
+            )
 
         if dec is None:
             # 降级：单 agent 静态分析
@@ -187,8 +206,10 @@ class AgentTeam:
             },
             ensure_ascii=False,
         )
+        log.info("[pipeline 4/4] Risk 风控复核中...")
         risk = self._ask(RISK_PROMPT, risk_user)
         if risk and not risk.get("approved", True):
+            log.warning("[pipeline 4/4] Risk 否决: %s", str(risk.get("note", ""))[:80])
             original_reason = decision["reason"]
             decision["decision"] = "HOLD"
             decision["confidence"] = min(decision["confidence"], 0.5)
