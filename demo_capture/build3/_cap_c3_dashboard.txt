@@ -1,0 +1,1 @@
+The dashboard: scroll for each decision and expand its evidence.
