@@ -97,7 +97,7 @@ File: `docs/demo.mp4` (93s, 1920×1080, silent, subtitled). Scene map:
 | Time | Scene |
 |---|---|
 | 0:00–0:06 | Title: PantaPilot, the four-role pipeline |
-| 0:06–0:28 | **Real terminal run** — live Panta scan → Scout/Estimator/Decision/Risk → HOLD |
+| 0:06–0:28 | **Terminal run** — the real captured output, lines printing in order with a scrolling window and cursor. It is a faithful re-drawing of `demo_capture/run_transcript.txt`, not a screen recording. |
 | 0:28–0:40 | Pipeline diagram: why four roles beat one prompt |
 | 0:40–0:54 | **Evidence chain**, verbatim from `demo_capture/run.jsonl` |
 | 0:54–1:09 | Live dashboard: pipeline cards + market grid |

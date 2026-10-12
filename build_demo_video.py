@@ -2,7 +2,10 @@
 
 Scenes (ffmpeg, no external editor):
   1. Title card
-  2. LIVE terminal run        (real output from demo_capture/run_transcript.txt)
+  2. LIVE terminal run        (progressive replay of demo_capture/run_transcript.txt:
+                               lines print in order with a scrolling window + cursor.
+                               This is a faithful re-drawing of the captured run, NOT a
+                               screen recording -- the content is verbatim run output.)
   3. 4-agent pipeline diagram (the actual Scout->Estimator->Decision->Risk flow)
   4. Decision evidence chain  (real JSONL record fields)
   5. Dashboard                (docs/dashboard.png)
@@ -101,28 +104,64 @@ def card(out: Path, lines: list[tuple[str, str, int, str]], seconds: float = 4.0
          "-t", str(seconds), "-pix_fmt", "yuv420p", str(out)])
 
 
+def _line_color(ln: str) -> str:
+    if ln.startswith("  Panta") or "trade_dry_run" in ln:
+        return GREEN
+    if "!!" in ln:
+        return "0xe74c3c"
+    if ln.startswith("=") or ln.startswith(" PantaPilot") or ln.startswith(" SUMMARY"):
+        return ACCENT
+    if ln.strip().startswith(("Scout", "Estimator", "Decision", "Risk", "Benchmark")):
+        return "0xf1c40f"
+    return FG
+
+
+LINE_H = 30          # row pitch in px
+TEXT_TOP = 132       # y of the first transcript row
+MAX_ROWS = 28        # rows visible before the view scrolls
+LEAD_IN = 1.2        # seconds of empty terminal before the first line
+
+
 def terminal_scene(out: Path, lines: list[str], seconds: float) -> None:
-    """Render a terminal transcript, paginated so text stays legible."""
-    per_page = 30
-    pages = [lines[i:i + per_page] for i in range(0, len(lines), per_page)] or [["(no output)"]]
-    per = max(seconds / len(pages), 0.8)
+    """Render the transcript as a progressive, scrolling terminal.
+
+    This is a re-drawing of the real captured run rather than a screen recording:
+    each line appears in turn (top to bottom), the text scrolls up once it fills
+    the window, and a cursor blinks at the write head. Nothing is invented -- the
+    content is exactly `lines`, taken from demo_capture/run_transcript.txt.
+    """
+    lines = lines or ["(no output)"]
+    total = len(lines)
+    reveal = max(seconds - LEAD_IN, 0.5)
+    per_line = reveal / total
+
     clips: list[Path] = []
-    for pi, page in enumerate(pages):
-        p = WORK / f"term_{pi}.png"
-        render_terminal_png(p, page, page_no=pi + 1, page_total=len(pages))
-        clip = WORK / f"term_{pi}.mp4"
-        run(["ffmpeg", "-y", "-loop", "1", "-i", str(p), "-t", f"{per:.2f}",
-             "-r", str(FPS), "-pix_fmt", "yuv420p",
-             "-vf", f"scale={W}:{H}", "-c:v", "libx264", str(clip)])
+
+    # Lead-in: an empty terminal with a blinking cursor at the write head.
+    lead = WORK / "term_lead.mp4"
+    _terminal_frame(lead, [], dur=LEAD_IN)
+    clips.append(lead)
+
+    # One clip per revealed line. Only the first n lines are drawn, so text that
+    # has not "printed" yet is genuinely absent rather than merely cropped away.
+    for n in range(1, total + 1):
+        first = max(0, n - MAX_ROWS)          # scroll once the window is full
+        visible = lines[first:n]
+        cursor_row = (n - 1) - first
+        clip = WORK / f"term_n{n:03d}.mp4"
+        _terminal_frame(clip, visible, dur=per_line, cursor_row=cursor_row,
+                        show_cursor=(n < total))
         clips.append(clip)
+
     concat(out, clips)
 
 
-def render_terminal_png(out: Path, lines: list[str], page_no: int, page_total: int) -> None:
-    """Draw a terminal window as a PNG via ffmpeg drawtext."""
-    # The colour source must be the first link in the chain; keep it in `filters`.
+def _terminal_frame(out: Path, visible: list[str], *, dur: float,
+                    cursor_row: int = 0, show_cursor: bool = True) -> None:
+    """Render one terminal state: window chrome + the `visible` lines only."""
+    dur = max(dur, 0.05)
     filters = [
-        f"color=c={BG}:s={W}x{H}:d=1:r=1[bg]",
+        f"color=c={BG}:s={W}x{H}:d=1:r={FPS}[bg]",
         f"[bg]drawbox=x=60:y=60:w={W-120}:h={H-140}:color=0x171a2b@1:t=fill[win]",
         f"[win]drawbox=x=60:y=60:w={W-120}:h=52:color=0x242a44@1:t=fill[bar]",
         f"[bar]drawbox=x=96:y=78:w=16:h=16:color=0xe74c3c@1:t=fill[d1]",
@@ -130,30 +169,24 @@ def render_terminal_png(out: Path, lines: list[str], page_no: int, page_total: i
         f"[d2]drawbox=x=148:y=78:w=16:h=16:color=0x2ecc71@1:t=fill[d3]",
     ]
     cur = "d3"
-    for i, ln in enumerate(lines):
-        color = FG
-        if ln.startswith("  Panta") or "trade_dry_run" in ln:
-            color = GREEN
-        elif "!!" in ln:
-            color = "0xe74c3c"
-        elif ln.startswith("=") or ln.startswith(" PantaPilot") or ln.startswith(" SUMMARY"):
-            color = ACCENT
-        elif ln.strip().startswith(("Scout", "Estimator", "Decision", "Risk", "Benchmark")):
-            color = "0xf1c40f"
+    for i, ln in enumerate(visible):
         nxt = f"t{i}"
         filters.append(
-            f"[{cur}]{drawtext(ln[:118], font=MONO, size=22, color=color, x='90', y=str(132 + i*30))}[{nxt}]"
+            f"[{cur}]{drawtext(ln[:118], font=MONO, size=22, color=_line_color(ln), x='90', y=str(TEXT_TOP + i*LINE_H))}[{nxt}]"
         )
         cur = nxt
-    # page indicator
-    page_y = H - 70  # computed here: a nested '{H-70}' inside an f-string stays literal
-    filters.append(
-        f"[{cur}]{drawtext(f'page {page_no}/{page_total}', font=MONO, size=20, color='0x667788', x='90', y=str(page_y))}[vout]"
-    )
-    cur = "vout"
+    # Blinking cursor at the write head (t toggles because we emit real frames).
+    if show_cursor:
+        cy = TEXT_TOP + cursor_row * LINE_H + 2
+        filters.append(
+            f"[{cur}]drawbox=x=90:y={cy}:w=13:h=24:color=0xe8eaf0@1:t=fill:"
+            f"enable='lt(mod(t,1.0),0.5)'[cur1]"
+        )
+        cur = "cur1"
     fc = ";".join(filters)
     run(["ffmpeg", "-y", "-filter_complex", fc, "-map", f"[{cur}]",
-         "-frames:v", "1", str(out)])
+         "-t", f"{dur:.4f}", "-r", str(FPS), "-pix_fmt", "yuv420p",
+         "-c:v", "libx264", str(out)])
 
 
 def pipeline_scene(out: Path, seconds: float) -> None:
